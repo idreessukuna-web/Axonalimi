@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Axon — Alimi's Coding Assistant</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0d1117;--surface:#161b22;--surface2:#1c2128;--border:#21262d;--accent:#58a6ff;--accent-dim:#1f3a5f;--accent-glow:rgba(88,166,255,0.15);--text:#e6edf3;--text-muted:#8b949e;--green:#3fb950;--red:#f85149;--yellow:#d29922;--font-mono:'JetBrains Mono',monospace;--font-body:'Inter',system-ui,sans-serif}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body);height:100vh;display:flex;flex-direction:column;overflow:hidden}
+header{padding:12px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;background:var(--surface);flex-shrink:0}
+.logo{width:30px;height:30px;background:var(--accent);border-radius:7px;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:14px;font-weight:600;color:var(--bg)}
+.header-info h1{font-size:15px;font-weight:600;letter-spacing:-0.2px}
+.header-info p{font-size:11px;color:var(--text-muted);font-family:var(--font-mono)}
+.header-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.lang-select{background:var(--surface2);border:1px solid var(--border);color:var(--text-muted);font-family:var(--font-mono);font-size:11px;padding:5px 8px;border-radius:6px;outline:none;cursor:pointer}
+.icon-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text-muted);width:30px;height:30px;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.15s;font-size:14px}
+.icon-btn:hover{border-color:var(--accent);color:var(--accent)}
+.status{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-muted);font-family:var(--font-mono)}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--green)}
+.dot.busy{background:var(--yellow);animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+#chat{flex:1;overflow-y:auto;padding:28px 0;scroll-behavior:smooth}
+#chat::-webkit-scrollbar{width:4px}
+#chat::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.welcome{max-width:720px;margin:10px auto 28px;padding:0 20px;text-align:center}
+.welcome-icon{width:52px;height:52px;background:var(--accent-dim);border:1px solid var(--accent-dim);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:22px}
+.welcome h2{font-size:20px;font-weight:600;margin-bottom:6px;letter-spacing:-0.3px}
+.welcome p{color:var(--text-muted);font-size:13.5px;line-height:1.6}
+.suggestions{max-width:720px;margin:0 auto 28px;padding:0 20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px}
+.suggestion{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px;cursor:pointer;transition:all 0.15s;text-align:left}
+.suggestion:hover{border-color:var(--accent);background:var(--accent-glow)}
+.suggestion .s-title{font-size:12.5px;font-weight:500;color:var(--text);margin-bottom:2px}
+.suggestion .s-sub{font-size:11px;color:var(--text-muted);font-family:var(--font-mono)}
+.message{max-width:720px;margin:0 auto 22px;padding:0 20px;display:flex;gap:12px;align-items:flex-start}
+.avatar{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px;font-family:var(--font-mono);letter-spacing:0.5px}
+.avatar.ai{background:var(--accent-dim);color:var(--accent)}
+.avatar.user{background:#2d333b;color:#adbac7}
+.bubble{flex:1;font-size:14px;line-height:1.75;color:var(--text)}
+.bubble .label{font-size:11px;font-weight:600;margin-bottom:6px;font-family:var(--font-mono);letter-spacing:0.5px}
+.bubble .label.ai-label{color:var(--accent)}
+.bubble .label.user-label{color:var(--text-muted)}
+.bubble p{margin-bottom:10px}
+.bubble p:last-child{margin-bottom:0}
+.bubble ul,.bubble ol{padding-left:22px;margin-bottom:10px}
+.bubble li{margin-bottom:5px}
+.bubble strong{color:#fff;font-weight:600}
+.bubble h3{font-size:14px;font-weight:600;color:#fff;margin:14px 0 6px}
+.code-wrap{background:#0d1117;border:1px solid var(--border);border-radius:8px;margin:12px 0;overflow:hidden}
+.code-header{display:flex;align-items:center;justify-content:space-between;padding:7px 12px;background:var(--surface2);border-bottom:1px solid var(--border)}
+.code-lang{font-family:var(--font-mono);font-size:11px;color:var(--text-muted)}
+.code-actions{display:flex;gap:6px}
+.code-btn{background:var(--border);border:none;color:var(--text-muted);font-size:11px;padding:3px 9px;border-radius:4px;cursor:pointer;font-family:var(--font-mono);transition:all 0.15s}
+.code-btn:hover{background:var(--accent-dim);color:var(--accent)}
+.code-btn.copied{color:var(--green)}
+.code-wrap pre{margin:0!important;border-radius:0!important;border:none!important}
+.code-wrap pre code{font-family:var(--font-mono)!important;font-size:12.5px!important;padding:14px 16px!important;display:block}
+.bubble p code,.bubble li code{background:var(--surface2);border:1px solid var(--border);padding:2px 6px;border-radius:4px;font-family:var(--font-mono);font-size:12px;color:#e6edf3}
+.typing{display:flex;gap:4px;align-items:center;padding:4px 0}
+.typing span{width:6px;height:6px;background:var(--accent);border-radius:50%;animation:bounce 1.2s infinite;opacity:0.6}
+.typing span:nth-child(2){animation-delay:0.2s}
+.typing span:nth-child(3){animation-delay:0.4s}
+@keyframes bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-6px)}}
+footer{padding:12px 20px;border-top:1px solid var(--border);background:var(--surface);flex-shrink:0}
+.input-wrap{max-width:720px;margin:0 auto}
+.input-row{display:flex;gap:8px;align-items:flex-end}
+textarea{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-body);font-size:14px;padding:10px 14px;resize:none;min-height:42px;max-height:180px;line-height:1.5;outline:none;transition:border-color 0.15s}
+textarea:focus{border-color:var(--accent)}
+textarea::placeholder{color:var(--text-muted)}
+#send{background:var(--accent);border:none;color:var(--bg);width:40px;height:40px;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:opacity 0.15s}
+#send:hover{opacity:0.85}
+#send:disabled{opacity:0.35;cursor:not-allowed}
+#send svg{width:15px;height:15px}
+.footer-hint{text-align:center;margin-top:8px;font-size:11px;color:var(--text-muted);font-family:var(--font-mono)}
+#clear-confirm{display:none;position:fixed;bottom:90px;right:20px;background:var(--surface);border:1px solid var(--red);border-radius:8px;padding:12px 16px;font-size:13px;z-index:50;box-shadow:0 4px 20px rgba(0,0,0,0.4)}
+#clear-confirm p{margin-bottom:10px}
+#clear-confirm .btns{display:flex;gap:8px}
+#clear-confirm button{flex:1;padding:6px;border-radius:6px;border:none;font-size:12px;font-family:var(--font-mono);cursor:pointer}
+.btn-cancel{background:var(--border);color:var(--text-muted)}
+.btn-danger{background:var(--red);color:white;font-weight:600}
+</style>
+</head>
+<body>
+
+<div id="clear-confirm">
+  <p>Clear all messages?</p>
+  <div class="btns">
+    <button class="btn-cancel" onclick="hideClear()">Cancel</button>
+    <button class="btn-danger" onclick="confirmClear()">Clear</button>
+  </div>
+</div>
+
+<header>
+  <div class="logo">AX</div>
+  <div class="header-info">
+    <h1>Axon</h1>
+    <p>Alimi's coding assistant</p>
+  </div>
+  <div class="header-right">
+    <select class="lang-select" id="lang-select">
+      <option value="">Any language</option>
+      <option value="javascript">JavaScript</option>
+      <option value="python">Python</option>
+      <option value="typescript">TypeScript</option>
+      <option value="rust">Rust</option>
+      <option value="go">Go</option>
+      <option value="java">Java</option>
+      <option value="cpp">C++</option>
+      <option value="sql">SQL</option>
+      <option value="bash">Bash</option>
+    </select>
+    <button class="icon-btn" onclick="showClear()" title="Clear chat">🗑</button>
+    <div class="status">
+      <div class="dot" id="status-dot"></div>
+      <span id="status-text">ready</span>
+    </div>
+  </div>
+</header>
+
+<div id="chat">
+  <div class="welcome" id="welcome">
+    <div class="welcome-icon">⚡</div>
+    <h2>Hey Alimi, I'm Axon.</h2>
+    <p>Your personal coding assistant. Ask me to write code, debug problems,<br>explain concepts, or review anything you're building.</p>
+  </div>
+  <div class="suggestions" id="suggestions">
+    <div class="suggestion" onclick="suggest('Write a REST API in Node.js with Express')">
+      <div class="s-title">Build a REST API</div><div class="s-sub">Node.js / Express</div>
+    </div>
+    <div class="suggestion" onclick="suggest('Explain async/await vs promises in JavaScript')">
+      <div class="s-title">async/await explained</div><div class="s-sub">JavaScript</div>
+    </div>
+    <div class="suggestion" onclick="suggest('What is Big O notation and why does it matter?')">
+      <div class="s-title">Big O Notation</div><div class="s-sub">Algorithms</div>
+    </div>
+    <div class="suggestion" onclick="suggest('Write a Python script to read and parse a CSV file')">
+      <div class="s-title">Parse a CSV file</div><div class="s-sub">Python</div>
+    </div>
+    <div class="suggestion" onclick="suggest('How do I center a div in CSS?')">
+      <div class="s-title">Center a div</div><div class="s-sub">CSS</div>
+    </div>
+    <div class="suggestion" onclick="suggest('Explain recursion with a real example')">
+      <div class="s-title">Recursion</div><div class="s-sub">Concepts</div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="input-wrap">
+    <div class="input-row">
+      <textarea id="input" placeholder="Ask Axon anything... paste code, describe a bug, ask a question" rows="1"></textarea>
+      <button id="send" onclick="sendMessage()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+        </svg>
+      </button>
+    </div>
+    <div class="footer-hint">Enter to send · Shift+Enter for new line</div>
+  </div>
+</footer>
+
+<script>
+let history=[];
+let busy=false;
+const chatEl=document.getElementById('chat');
+const inputEl=document.getElementById('input');
+const sendBtn=document.getElementById('send');
+const dotEl=document.getElementById('status-dot');
+const statusEl=document.getElementById('status-text');
+
+function showClear(){document.getElementById('clear-confirm').style.display='block';}
+function hideClear(){document.getElementById('clear-confirm').style.display='none';}
+function confirmClear(){history=[];chatEl.innerHTML='';hideClear();}
+function suggest(t){inputEl.value=t;autoResize();inputEl.focus();}
+function autoResize(){inputEl.style.height='auto';inputEl.style.height=Math.min(inputEl.scrollHeight,180)+'px';}
+function setStatus(s){if(s==='busy'){dotEl.className='dot busy';statusEl.textContent='thinking...';}else{dotEl.className='dot';statusEl.textContent='ready';}}
+
+inputEl.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}});
+inputEl.addEventListener('input',autoResize);
+
+async function sendMessage(){
+  const text=inputEl.value.trim();
+  if(!text||busy)return;
+  document.getElementById('welcome')?.remove();
+  document.getElementById('suggestions')?.remove();
+  inputEl.value='';inputEl.style.height='auto';
+  busy=true;sendBtn.disabled=true;setStatus('busy');
+  addMessage('user',text);
+  history.push({role:'user',content:text});
+  addTyping();
+  const lang=document.getElementById('lang-select').value;
+  const langHint=lang?`The user prefers ${lang} when a language choice is needed.`:'';
+  const SYSTEM=`You are Axon, a brilliant and friendly coding assistant built exclusively for Alimi. You know his name and use it occasionally but naturally — not every message.
+Your personality: sharp, direct, warm. You get straight to the answer but never feel cold. You care about Alimi actually understanding the code, not just copying it.
+- Always use fenced code blocks with the correct language tag
+- Explain the "why" behind your code, not just the "what"
+- Spot bugs or improvements proactively
+- Keep explanations plain — no buzzword soup
+- If given broken code, fix it, explain what was wrong, and suggest how to prevent it next time
+${langHint}`;
+  try{
+    const res=await fetch('/api/chat',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:2048,system:SYSTEM,messages:history})
+    });
+    const data=await res.json();
+    removeTyping();
+    if(data.error){addMessage('assistant','⚠️ Error: '+data.error.message);history.pop();}
+    else{
+      const reply=data.content?.map(b=>b.text||'').join('')||'Something went wrong.';
+      history.push({role:'assistant',content:reply});
+      addMessage('assistant',reply);
+    }
+  }catch(err){
+    removeTyping();
+    addMessage('assistant','⚠️ Connection failed. Please try again.');
+    history.pop();
+  }
+  busy=false;sendBtn.disabled=false;setStatus('ready');inputEl.focus();
+}
+
+function addMessage(role,text){
+  const isAI=role==='assistant';
+  const wrap=document.createElement('div');wrap.className='message';
+  const av=document.createElement('div');av.className=`avatar ${isAI?'ai':'user'}`;av.textContent=isAI?'AX':'AL';
+  const bubble=document.createElement('div');bubble.className='bubble';
+  const label=document.createElement('div');label.className=`label ${isAI?'ai-label':'user-label'}`;label.textContent=isAI?'Axon':'Alimi';
+  bubble.appendChild(label);
+  if(isAI){
+    const content=document.createElement('div');content.innerHTML=renderMarkdown(text);bubble.appendChild(content);
+    bubble.querySelectorAll('pre code').forEach(el=>hljs.highlightElement(el));
+    bubble.querySelectorAll('.code-wrap').forEach(w=>{
+      const codeEl=w.querySelector('code');
+      const lang=codeEl?.className.match(/language-(\w+)/)?.[1]||'txt';
+      w.querySelector('.copy-action').onclick=()=>{
+        navigator.clipboard.writeText(codeEl.textContent);
+        const btn=w.querySelector('.copy-action');btn.textContent='✓ copied';btn.classList.add('copied');
+        setTimeout(()=>{btn.textContent='copy';btn.classList.remove('copied');},1600);
+      };
+      w.querySelector('.dl-action').onclick=()=>{
+        const ext={javascript:'js',python:'py',typescript:'ts',rust:'rs',go:'go',java:'java',cpp:'cpp',sql:'sql',bash:'sh',html:'html',css:'css'}[lang]||'txt';
+        const blob=new Blob([codeEl.textContent],{type:'text/plain'});
+        const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`axon-code.${ext}`;a.click();
+      };
+    });
+  }else{const p=document.createElement('p');p.textContent=text;bubble.appendChild(p);}
+  wrap.appendChild(av);wrap.appendChild(bubble);chatEl.appendChild(wrap);chatEl.scrollTop=chatEl.scrollHeight;
+}
+
+function addTyping(){
+  const wrap=document.createElement('div');wrap.className='message';wrap.id='typing';
+  const av=document.createElement('div');av.className='avatar ai';av.textContent='AX';
+  const b=document.createElement('div');b.className='bubble';
+  const l=document.createElement('div');l.className='label ai-label';l.textContent='Axon';
+  const dots=document.createElement('div');dots.className='typing';dots.innerHTML='<span></span><span></span><span></span>';
+  b.appendChild(l);b.appendChild(dots);wrap.appendChild(av);wrap.appendChild(b);
+  chatEl.appendChild(wrap);chatEl.scrollTop=chatEl.scrollHeight;
+}
+function removeTyping(){document.getElementById('typing')?.remove();}
+
+function escHtml(t){return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function renderMarkdown(text){
+  text=text.replace(/```(\w+)?\n?([\s\S]*?)```/g,(_,lang,code)=>{
+    const l=lang||'code';
+    return `<div class="code-wrap"><div class="code-header"><span class="code-lang">${escHtml(l)}</span><div class="code-actions"><button class="code-btn copy-action">copy</button><button class="code-btn dl-action">↓ download</button></div></div><pre><code class="language-${escHtml(l)}">${escHtml(code.trim())}</code></pre></div>`;
+  });
+  text=text.replace(/`([^`\n]+)`/g,'<code>$1</code>');
+  text=text.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+  text=text.replace(/^### (.+)$/gm,'<h3>$1</h3>');
+  text=text.replace(/^## (.+)$/gm,'<h3>$1</h3>');
+  text=text.replace(/^[-*] (.+)$/gm,'<li>$1</li>');
+  text=text.replace(/((?:<li>.*<\/li>\n?)+)/g,'<ul>$1</ul>');
+  text=text.replace(/^\d+\. (.+)$/gm,'<li>$1</li>');
+  text=text.split(/\n{2,}/).map(p=>(/^<(div|ul|ol|h3|pre)/.test(p.trim()))?p:`<p>${p.replace(/\n/g,' ').trim()}</p>`).join('');
+  return text;
+}
+</script>
+</body>
+</html>
